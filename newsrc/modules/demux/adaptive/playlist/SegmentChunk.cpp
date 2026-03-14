@@ -90,13 +90,13 @@ void SegmentChunk::onDownload(block_t **pp_block)
                 rep->prependInitData(pp_block);
                 const std::string kid = encryptionSession->getKeyId();
                 const std::string key = encryptionSession->getKey();
-                size_t segmentSize = AP4_Decrypt::decrypt(reinterpret_cast<uint8_t**>(&*pp_block->p_buffer), *pp_block->i_buffer, kid.c_str(), key.c_str());
-                *pp_block->i_buffer = segmentSize;
+                size_t segmentSize = AP4_Decrypt::decrypt(reinterpret_cast<uint8_t**>(&(*pp_block)->p_buffer), (*pp_block)->i_buffer, kid.c_str(), key.c_str());
+                (*pp_block)->i_buffer = segmentSize;
                 // FIXME:- Split.
                 uint8_t* initData = nullptr;
                 size_t initSize = 0;
-                AP4_Decrypt::split(reinterpret_cast<uint8_t**>(&*pp_block->p_buffer), segmentSize, &initData, initSize);
-                *pp_block->i_buffer = segmentSize;
+                AP4_Decrypt::split(reinterpret_cast<uint8_t**>(&(*pp_block)->p_buffer), segmentSize, &initData, initSize);
+                (*pp_block)->i_buffer = segmentSize;
                 // FIXME:- Save new init data.
                 if (rep->initData)
                 {
