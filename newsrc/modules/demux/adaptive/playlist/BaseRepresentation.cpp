@@ -172,9 +172,9 @@ void BaseRepresentation::saveInitData(block_t** newInitData)
         initData = nullptr;
         initDataSize = 0;
     }
-    initData = (uint8_t*)malloc(*newInitData->i_buffer);
-    memcpy(initData, *newInitData->p_buffer, *newInitData->i_buffer);
-    initDataSize = *newInitData->i_buffer;
+    initData = (uint8_t*)malloc((*newInitData)->i_buffer);
+    memcpy(initData, (*newInitData)->p_buffer, (*newInitData)->i_buffer);
+    initDataSize = (*newInitData)->i_buffer;
 }
 
 void BaseRepresentation::prependInitData(block_t** segmentData) const
