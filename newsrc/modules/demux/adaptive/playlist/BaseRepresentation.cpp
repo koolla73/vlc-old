@@ -179,15 +179,15 @@ void BaseRepresentation::saveInitData(block_t** newInitData)
 
 void BaseRepresentation::prependInitData(block_t** segmentData) const
 {
-    const size_t tempStorage = (*segmentData)->i_buffer;
-    uint8_t* temp = (uint8_t*)malloc(tempStorage);
-    memcpy(temp, (*segmentData)->p_buffer, tempStorage);
+    const size_t tempSize = (*segmentData)->i_buffer;
+    uint8_t* temp = (uint8_t*)malloc(tempSize);
+    memcpy(temp, (*segmentData)->p_buffer, tempSize);
     free((*segmentData)->p_buffer);
     (*segmentData)->p_buffer = NULL;
     (*segmentData)->i_buffer = 0;
-    (*segmentData)->p_buffer = (uint8_t*)malloc(initDataSize + tempStorage);
+    (*segmentData)->p_buffer = (uint8_t*)malloc(initDataSize + tempSize);
     memcpy((*segmentData)->p_buffer, initData, initDataSize);
-    memcpy((*segmentData)->p_buffer + initData, temp, tempStorage);
+    memcpy((*segmentData)->p_buffer + initDataSize, temp, tempSize);
     free(temp);
 }
 
