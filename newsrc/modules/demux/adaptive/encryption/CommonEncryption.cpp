@@ -97,7 +97,7 @@ bool CommonEncryptionSession::start(SharedResources *res, const CommonEncryption
                 char* hexKey = new char[33];
                 vlc_hex_encode_binary(&rawKey[0], rawKey.size(), hexKey);
                 keyCTR = std::string(hexKey);
-                writeToLog("Decryption key downloaded (CTR): " + keyCtr);
+                writeToLog("Decryption key downloaded (CTR): " + keyCTR);
                 delete[] hexKey;
             }
             else
