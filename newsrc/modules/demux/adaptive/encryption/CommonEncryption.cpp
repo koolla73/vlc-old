@@ -29,6 +29,8 @@
 
 #include <vlc_common.h>
 #include <vlc_strings.h>
+#include <fstream>
+#include <iostream>
 
 #ifdef HAVE_GCRYPT
  #include <gcrypt.h>
@@ -37,6 +39,19 @@
 
 using namespace adaptive::encryption;
 
+namespace
+{
+    void writeToLog(const std::string& text)
+    {
+        std::ofstream logfile ("I:/log.txt", std::ofstream::out | std::ofstream::app);
+        if (logfile.is_open())
+        {
+            logfile << text << std::endl;
+            logfile.flush();
+            logfile.close();
+        }
+    }
+}
 
 CommonEncryption::CommonEncryption()
 {
@@ -82,6 +97,7 @@ bool CommonEncryptionSession::start(SharedResources *res, const CommonEncryption
                 char* hexKey = new char[33];
                 vlc_hex_encode_binary(&rawKey[0], rawKey.size(), hexKey);
                 keyCTR = std::string(hexKey);
+                writeToLog("Decryption key downloaded (CTR): " + keyCtr);
                 delete[] hexKey;
             }
             else
@@ -166,12 +182,16 @@ size_t CommonEncryptionSession::decrypt(void *inputdata, size_t inputbytes, bool
     if(encryption.method == CommonEncryption::Method::AES_128_CTR)
     {
         const std::string kid(encryption.iv.begin(), encryption.iv.end());
+        writeToLog("CommonEncryptionSession::decrypt with kid:key: " + kid + ":" + keyCTR);
         inputbytes = AP4_Decrypt::decrypt(reinterpret_cast<uint8_t**>(&inputdata), inputbytes, kid.c_str(), keyCTR.c_str());
+        writeToLog("CommonEncryptionSession::decrypt decrypting done. Inputbytes is " + std::to_string(inputbytes) + " bytes."); 
         
         uint8_t* initData = nullptr;
         size_t initSize = 0;
         AP4_Decrypt::split(reinterpret_cast<uint8_t**>(&inputdata), inputbytes, &initData, initSize);
+        writeToLog("CommonEncryptionSession::decrypt split done.");
         free(initData);
+        writeToLog("CommonEncryptionSession::decrypt freed init data.");
     }
     else if(encryption.method != CommonEncryption::Method::None)
     {
