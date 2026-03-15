@@ -39,9 +39,25 @@
 
 #include <limits>
 #include <vlc_frame.h>
+#include <fstream>
+#include <iostream>
 
 using namespace adaptive;
 using namespace adaptive::playlist;
+
+namespace
+{
+    void writeToLog(const std::string& text)
+    {
+        std::ofstream logfile ("I:/log.txt", std::ofstream::out | std::ofstream::app);
+        if (logfile.is_open())
+        {
+            logfile << text << std::endl;
+            logfile.flush();
+            logfile.close();
+        }
+    }
+}
 
 BaseRepresentation::BaseRepresentation( BaseAdaptationSet *set ) :
                 CommonAttributesElements( set ),
@@ -166,29 +182,38 @@ void BaseRepresentation::pruneByPlaybackTime(vlc_tick_t time)
 
 void BaseRepresentation::saveInitData(block_t** newInitData)
 {
+    writeToLog("BaseRepresentation::saveInitData saving init data...");
     if (initData)
     {
         free(initData);
         initData = nullptr;
         initDataSize = 0;
     }
+    writeToLog("BaseRepresentation::saveInitData mallocing init data...");
     initData = (uint8_t*)malloc((*newInitData)->i_buffer);
     memcpy(initData, (*newInitData)->p_buffer, (*newInitData)->i_buffer);
+    writeToLog("BaseRepresentation::saveInitData copied init data!");
     initDataSize = (*newInitData)->i_buffer;
+    writeToLog("BaseRepresentation::saveInitData done!");
 }
 
 void BaseRepresentation::prependInitData(block_t** segmentData) const
 {
+    writeToLog("BaseRepresentation::prependInitData starting...");
     const size_t tempSize = (*segmentData)->i_buffer;
     uint8_t* temp = (uint8_t*)malloc(tempSize);
     memcpy(temp, (*segmentData)->p_buffer, tempSize);
+    writeToLog("BaseRepresentation::prependInitData copied segment data to temp...");
     free((*segmentData)->p_buffer);
     (*segmentData)->p_buffer = NULL;
     (*segmentData)->i_buffer = 0;
     (*segmentData)->p_buffer = (uint8_t*)malloc(initDataSize + tempSize);
     memcpy((*segmentData)->p_buffer, initData, initDataSize);
+    writeToLog("BaseRepresentation::prependInitData prepended init data...");
     memcpy((*segmentData)->p_buffer + initDataSize, temp, tempSize);
+    writeToLog("BaseRepresentation::prependInitData copied segment data.");
     free(temp);
+    writeToLog("BaseRepresentation::prependInitData done!");
 }
 
 vlc_tick_t BaseRepresentation::getMinAheadTime(uint64_t curnum) const
