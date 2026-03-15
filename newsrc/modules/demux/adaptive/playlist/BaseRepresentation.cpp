@@ -199,31 +199,15 @@ void BaseRepresentation::saveInitData(block_t** newInitData)
 
 void BaseRepresentation::prependInitData(block_t** segmentData) const
 {
-    writeToLog("BaseRepresentation::prependInitData starting...");
-    const size_t tempSize = (*segmentData)->i_buffer;
-    uint8_t* temp = (uint8_t*)malloc(tempSize);
-    memcpy(temp, (*segmentData)->p_buffer, tempSize);
-    writeToLog("BaseRepresentation::prependInitData copied segment data to temp...");
-    writeToLog("BaseRepresentation::prependInitData original buffer has " + std::to_string((*segmentData)->i_buffer) + "bytes before freeing...");
-    if ((*segmentData)->p_buffer)
+    writeToLog("BaseRepresentation::prependInitData reallocing frame...");
+    *segmentData = block_Realloc(*segmentData, initDataSize, (*segmentData)->i_buffer);
+    writeToLog("BaseRepresentation::prependInitData reallocing frame done.");
+    if (*segmentData)
     {
-        writeToLog("BaseRepresentation::prependInitData p_buffer is not empty, freeing it...");
-        free((*segmentData)->p_buffer);
-        writeToLog("BaseRepresentation::prependInitData freed original buffer...");
+        writeToLog("BaseRepresentation::prependInitData memcopying init data frame...");
+        memcpy((*segmentData)->p_buffer, initData, initDataSize);
+        writeToLog("BaseRepresentation::prependInitData memcopying init data frame done.");
     }
-    //free((*segmentData)->p_buffer);
-    //writeToLog("BaseRepresentation::prependInitData freed original buffer...");
-    (*segmentData)->p_buffer = NULL;
-    (*segmentData)->i_buffer = 0;
-    writeToLog("BaseRepresentation::prependInitData mallocing original buffer...");
-    (*segmentData)->p_buffer = (uint8_t*)malloc(initDataSize + tempSize);
-    writeToLog("BaseRepresentation::prependInitData mallocing original buffer done.");
-    memcpy((*segmentData)->p_buffer, initData, initDataSize);
-    writeToLog("BaseRepresentation::prependInitData prepended init data...");
-    memcpy((*segmentData)->p_buffer + initDataSize, temp, tempSize);
-    writeToLog("BaseRepresentation::prependInitData copied segment data.");
-    free(temp);
-    writeToLog("BaseRepresentation::prependInitData done!");
 }
 
 vlc_tick_t BaseRepresentation::getMinAheadTime(uint64_t curnum) const
