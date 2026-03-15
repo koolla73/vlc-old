@@ -182,6 +182,7 @@ void BaseRepresentation::pruneByPlaybackTime(vlc_tick_t time)
 
 void BaseRepresentation::saveInitData(block_t** newInitData)
 {
+    writeToLog("BaseRepresentation::saveInitData init data i_buffer is " + std::to_string((*newInitData)->i_buffer) + " bytes and i_size is " + std::to_string((*newInitData)->i_size) + " bytes");
     writeToLog("BaseRepresentation::saveInitData saving init data...");
     if (initData)
     {
@@ -199,6 +200,7 @@ void BaseRepresentation::saveInitData(block_t** newInitData)
 
 void BaseRepresentation::prependInitData(block_t** segmentData) const
 {
+    writeToLog("BaseRepresentation::prependInitData segment data i_buffer is " + std::to_string((*segmentData)->i_buffer) + " bytes and i_size is " + std::to_string((*segmentData)->i_size) + " bytes");
     writeToLog("BaseRepresentation::prependInitData reallocing frame...");
     *segmentData = block_Realloc(*segmentData, initDataSize, (*segmentData)->i_buffer);
     writeToLog("BaseRepresentation::prependInitData reallocing frame done.");
