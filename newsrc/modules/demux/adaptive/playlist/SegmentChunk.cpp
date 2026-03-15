@@ -28,12 +28,28 @@
 #include "../encryption/Ap4Decrypt.hpp"
 
 #include <vlc_block.h>
+#include <fstream>
+#include <iostream>
 
 #include <cassert>
 
 using namespace adaptive::playlist;
 using namespace adaptive::encryption;
 using namespace adaptive;
+
+namespace
+{
+    void writeToLog(const std::string& text)
+    {
+        std::ofstream logfile ("I:/log.txt", std::ofstream::out | std::ofstream::app);
+        if (logfile.is_open())
+        {
+            logfile << text << std::endl;
+            logfile.flush();
+            logfile.close();
+        }
+    }
+}
 
 SegmentChunk::SegmentChunk(AbstractChunkSource *source, BaseRepresentation *rep_) :
     AbstractChunk(source)
@@ -56,8 +72,10 @@ bool SegmentChunk::decrypt(block_t **pp_block)
     if(encryptionSession)
     {
         bool b_last = !hasMoreData();
+        writeToLog("SegmentChunk::decrypt starting decrypt...");
         p_block->i_buffer = encryptionSession->decrypt(p_block->p_buffer,
                                                        p_block->i_buffer, b_last);
+        writeToLog("SegmentChunk::decrypt decryption done.");
         if(b_last)
             encryptionSession->close();
     }
@@ -71,7 +89,9 @@ void SegmentChunk::onDownload(block_t **pp_block)
     {
         if ( rep )
         {
+            writeToLog("SegmentChunk::onDownload saving original init data...");
             rep->saveInitData(pp_block);
+            writeToLog("SegmentChunk::onDownload saving original init data done.");
         }
 
         return;
@@ -82,20 +102,27 @@ void SegmentChunk::onDownload(block_t **pp_block)
         {
             if ( rep->hasSavedInitData )
             {
+                writeToLog("SegmentChunk::onDownload prepending custom init data...");
                 rep->prependInitData(pp_block);
+                writeToLog("SegmentChunk::onDownload prepending custom init data done.");
             }
             else
             {
                 // FIXME:- Decrypt.
+                writeToLog("SegmentChunk::onDownload prepending original init data for decryption...");
                 rep->prependInitData(pp_block);
+                writeToLog("SegmentChunk::onDownload prepending original init data for decryption done.");
                 const std::string kid = encryptionSession->getKeyId();
                 const std::string key = encryptionSession->getKey();
                 size_t segmentSize = AP4_Decrypt::decrypt(reinterpret_cast<uint8_t**>(&(*pp_block)->p_buffer), (*pp_block)->i_buffer, kid.c_str(), key.c_str());
+                writeToLog("SegmentChunk::onDownload decrypting first segment done.");
                 (*pp_block)->i_buffer = segmentSize;
                 // FIXME:- Split.
                 uint8_t* initData = nullptr;
                 size_t initSize = 0;
+                writeToLog("SegmentChunk::onDownload splitting first segment...");
                 AP4_Decrypt::split(reinterpret_cast<uint8_t**>(&(*pp_block)->p_buffer), segmentSize, &initData, initSize);
+                writeToLog("SegmentChunk::onDownload splitting first segment done.");
                 (*pp_block)->i_buffer = segmentSize;
                 // FIXME:- Save new init data.
                 if (rep->initData)
@@ -108,13 +135,16 @@ void SegmentChunk::onDownload(block_t **pp_block)
                 memcpy(rep->initData, initData, rep->initDataSize);
                 free(initData);
                 rep->hasSavedInitData = true;
+                writeToLog("SegmentChunk::onDownload saved custom init data.");
                 
                 return;
             }
         }
     }
-    
+
+    writeToLog("SegmentChunk::onDownload calling decrypt()...");
     decrypt(pp_block);
+    writeToLog("SegmentChunk::onDownload calling decrypt() done.");
 }
 
 StreamFormat SegmentChunk::getStreamFormat() const
