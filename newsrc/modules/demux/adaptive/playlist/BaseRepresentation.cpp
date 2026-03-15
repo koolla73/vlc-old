@@ -205,9 +205,12 @@ void BaseRepresentation::prependInitData(block_t** segmentData) const
     memcpy(temp, (*segmentData)->p_buffer, tempSize);
     writeToLog("BaseRepresentation::prependInitData copied segment data to temp...");
     free((*segmentData)->p_buffer);
+    writeToLog("BaseRepresentation::prependInitData freed original buffer...");
     (*segmentData)->p_buffer = NULL;
     (*segmentData)->i_buffer = 0;
+    writeToLog("BaseRepresentation::prependInitData mallocing original buffer...");
     (*segmentData)->p_buffer = (uint8_t*)malloc(initDataSize + tempSize);
+    writeToLog("BaseRepresentation::prependInitData mallocing original buffer done.");
     memcpy((*segmentData)->p_buffer, initData, initDataSize);
     writeToLog("BaseRepresentation::prependInitData prepended init data...");
     memcpy((*segmentData)->p_buffer + initDataSize, temp, tempSize);
