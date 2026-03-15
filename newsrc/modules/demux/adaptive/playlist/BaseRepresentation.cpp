@@ -38,7 +38,8 @@
 #include "../tools/Helper.h"
 
 #include <limits>
-#include <vlc_frame.h>
+
+#include <vlc_block.h>
 #include <fstream>
 #include <iostream>
 
