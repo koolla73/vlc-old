@@ -4,8 +4,6 @@
 #include <cstdint>
 #include <cstdlib>
 
-struct block_t;
-
 class AP4_Decrypt {
 public:
 	AP4_Decrypt() = delete;
