@@ -71,7 +71,7 @@ bool CommonEncryptionSession::start(SharedResources *res, const CommonEncryption
     encryption = enc;
     if(encryption.method == CommonEncryption::Method::AES_128_CTR)
     {
-        if (keyCTR.empty())
+        if (key.empty())
         {
             if(!encryption.uri.empty())
             {
@@ -80,12 +80,16 @@ bool CommonEncryptionSession::start(SharedResources *res, const CommonEncryption
                     return false;
                 char* hexKey = new char[33];
                 vlc_hex_encode_binary(&rawKey[0], rawKey.size(), hexKey);
-                keyCTR = std::string(hexKey);
+                const std::string keyString = std::string(hexKey);
                 delete[] hexKey;
+                key = std::vector<unsigned char>(keyString.begin(), keyString.end());
             }
             else
-                keyCTR = res->getKeyring()->getCustomKey(std::string(encryption.iv.begin(), encryption.iv.end()));
-            if(keyCTR.size() != 32)
+            {
+                const std::string keyString = res->getKeyring()->getCustomKey(std::string(encryption.iv.begin(), encryption.iv.end()));
+                key = std::vector<unsigned char>(keyString.begin(), keyString.end());
+            }
+            if(key.size() != 32)
                 return false;
         }
         return true;
@@ -94,7 +98,7 @@ bool CommonEncryptionSession::start(SharedResources *res, const CommonEncryption
     /* We don't use the SharedResources */
     VLC_UNUSED(res);
 #else
-    if(encryption.method == CommonEncryption::Method::AES_128)
+    if(encryption.method == CommonEncryption::Method::AES_128_CBC)
     {
         if(key.empty())
         {
@@ -137,7 +141,7 @@ size_t CommonEncryptionSession::decrypt(void *inputdata, size_t inputbytes, bool
     VLC_UNUSED(last);
 #else
     gcry_cipher_hd_t handle = reinterpret_cast<gcry_cipher_hd_t>(ctx);
-    if(encryption.method == CommonEncryption::Method::AES_128 && ctx)
+    if(encryption.method == CommonEncryption::Method::AES_128_CBC && ctx)
     {
         if ((inputbytes % 16) != 0 || inputbytes < 16 ||
             gcry_cipher_decrypt(handle, inputdata, inputbytes, nullptr, 0))
