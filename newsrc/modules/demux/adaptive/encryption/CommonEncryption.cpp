@@ -134,40 +134,46 @@ void CommonEncryptionSession::close()
 #endif
 }
 
-size_t CommonEncryptionSession::decrypt(void *inputdata, size_t inputbytes, bool last)
+void CommonEncryptionSession::decrypt(block_t** segment, bool last)
 {
 #ifndef HAVE_GCRYPT
-    VLC_UNUSED(inputdata);
+    VLC_UNUSED(segment);
     VLC_UNUSED(last);
 #else
     gcry_cipher_hd_t handle = reinterpret_cast<gcry_cipher_hd_t>(ctx);
     if(encryption.method == CommonEncryption::Method::AES_128_CBC && ctx)
     {
-        if ((inputbytes % 16) != 0 || inputbytes < 16 ||
-            gcry_cipher_decrypt(handle, inputdata, inputbytes, nullptr, 0))
+        if (((*segment)->i_buffer % 16) != 0 || (*segment)->i_buffer < 16 ||
+            gcry_cipher_decrypt(handle, reinterpret_cast<void*>((*segment)->p_buffer), (*segment)->i_buffer, nullptr, 0))
         {
-            inputbytes = 0;
+            (*segment)->i_buffer = 0;
         }
         else if(last)
         {
             /* last bytes */
             /* remove the PKCS#7 padding from the buffer */
-            const uint8_t pad = reinterpret_cast<uint8_t *>(inputdata)[inputbytes - 1];
+            const uint8_t pad = (*segment)->p_buffer[(*segment)->i_buffer - 1];
             for(uint8_t i=0; i<pad && i<16; i++)
             {
-                if(reinterpret_cast<uint8_t *>(inputdata)[inputbytes - i - 1] != pad)
+                if((*segment)->p_buffer[(*segment)->i_buffer - i - 1] != pad)
                     break;
                 if(i+1==pad)
-                    inputbytes -= pad;
+                    (*segment)->i_buffer -= pad;
             }
         }
     }
     else
 #endif
-    if(encryption.method != CommonEncryption::Method::None)
+    if(encryption.method == CommonEncryption::Method::AES_128_CTR)
     {
-        inputbytes = 0;
+        const std::string kid(encryption.iv.begin(), encryption.iv.end());
+        const std::string keyString(key.begin(), key.end());
+        AP4_Decrypt::decrypt(segment, kid.c_str(), keyString.c_str());
+        
+        AP4_Decrypt::split(segment);
     }
-
-    return inputbytes;
+    else if(encryption.method != CommonEncryption::Method::None)
+    {
+        (*segment)->i_buffer = 0;
+    }
 }
