@@ -51,17 +51,9 @@ void AP4_Decrypt::decrypt(block_t** fragment, const char* keyId, const char* key
 		return;
 	}
 
-    block_t* newFragment = block_Alloc(decryptedOutputBuffer->GetDataSize());
-    if (newFragment == NULL)
-    {
-        decryptedOutputBuffer->Release();
-        return;
-    }
-    memcpy(newFragment->p_buffer, decryptedOutputBuffer->GetData(), decryptedOutputBuffer->GetDataSize());
-    newFragment->p_next = (*fragment)->p_next;
-    block_CopyProperties(newFragment, *fragment);
-    block_Release(*fragment);
-    *fragment = newFragment;
+    *fragment = block_Realloc(*fragment, 0, decryptedOutputBuffer->GetDataSize());
+    if (*fragment)
+        memcpy((*fragment)->p_buffer, decryptedOutputBuffer->GetData(), decryptedOutputBuffer->GetDataSize());
 
 	decryptedOutputBuffer->Release();
 }
@@ -73,7 +65,7 @@ void AP4_Decrypt::split(block_t** fragment, uint8_t** initData, size_t& initSize
 	Options.start_number = 1;
 	Options.track_id_count = 0;
 
-	AP4_MemoryByteStream* input = new AP4_MemoryByteStream(*segmentData, segmentSize);
+	AP4_MemoryByteStream* input = new AP4_MemoryByteStream((*fragment)->p_buffer, (*fragment)->i_buffer);
 	AP4_File* file = new AP4_File(*input, true);
 	AP4_Movie* movie = file->GetMovie();
 	if (movie == NULL) {
@@ -157,10 +149,9 @@ void AP4_Decrypt::split(block_t** fragment, uint8_t** initData, size_t& initSize
 		delete atom;
 	}
 	
-	free(*segmentData);
-	segmentSize = output->GetDataSize();
-	*segmentData = (uint8_t*)malloc(segmentSize);
-	memcpy(*segmentData, output->GetData(), segmentSize);
+	*fragment = block_Realloc(*fragment, 0, output->GetDataSize());
+    if (*fragment)
+        memcpy((*fragment)->p_buffer, output->GetData(), output->GetDataSize());
 
 	delete file;
 	if (input) input->Release();
