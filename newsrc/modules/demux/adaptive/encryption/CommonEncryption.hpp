@@ -26,6 +26,7 @@
 namespace adaptive
 {
     class SharedResources;
+    struct block_t;
 
     namespace encryption
     {
@@ -53,7 +54,7 @@ namespace adaptive
 
                 bool start(SharedResources *, const CommonEncryption &);
                 void close();
-                size_t decrypt(void *, size_t, bool);
+                size_t decrypt(block_t**, bool);
                 CommonEncryption::Method getEncryptionMethod() const { return encryption.method; }
                 std::string getKeyId() const { return std::string(encryption.iv.begin(), encryption.iv.end()); }
                 std::string getKey() const { return std::string(key.begin(), key.end()); }
