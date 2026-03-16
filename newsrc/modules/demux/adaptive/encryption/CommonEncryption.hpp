@@ -37,7 +37,7 @@ namespace adaptive
                 enum class Method
                 {
                     None,
-                    AES_128,
+                    AES_128_CBC,
                     AES_128_CTR,
                     AES_Sample,
                 } method;
