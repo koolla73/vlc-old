@@ -157,3 +157,99 @@ void AP4_Decrypt::split(block_t** fragment, uint8_t** initData, size_t& initSize
 	if (input) input->Release();
 	if (output) output->Release();
 }
+
+void AP4_Decrypt::split(block_t** fragment) {
+
+	AP4_Result result;
+	Options.pattern_params = "IN";
+	Options.start_number = 1;
+	Options.track_id_count = 0;
+
+	AP4_MemoryByteStream* input = new AP4_MemoryByteStream((*fragment)->p_buffer, (*fragment)->i_buffer);
+	AP4_File* file = new AP4_File(*input, true);
+	AP4_Movie* movie = file->GetMovie();
+	if (movie == NULL) {
+		delete file;
+		input->Release();
+		return;
+	}
+
+	AP4_MemoryByteStream* output = new AP4_MemoryByteStream();
+
+	AP4_FtypAtom* ftyp = file->GetFileType();
+	if (ftyp) {
+		result = ftyp->Write(*output);
+		if (AP4_FAILED(result)) {
+			delete file;
+			input->Release();
+			output->Release();
+			return;
+		}
+	}
+
+	result = movie->GetMoovAtom()->Write(*output);
+	if (AP4_FAILED(result)) {
+		delete file;
+		input->Release();
+		output->Release();
+		return;
+	}
+
+	AP4_Atom* atom = NULL;
+	unsigned int track_id = 0;
+	AP4_DefaultAtomFactory atom_factory;
+	for (;;) {
+		// process the next atom
+		result = atom_factory.CreateAtomFromStream(*input, atom);
+		if (AP4_FAILED(result)) break;
+
+		if (atom->GetType() == AP4_ATOM_TYPE_MOOF) {
+			AP4_ContainerAtom* moof = AP4_DYNAMIC_CAST(AP4_ContainerAtom, atom);
+
+			unsigned int traf_count = 0;
+			AP4_ContainerAtom* traf = NULL;
+			do {
+				traf = AP4_DYNAMIC_CAST(AP4_ContainerAtom, moof->GetChild(AP4_ATOM_TYPE_TRAF, traf_count));
+				if (traf == NULL) break;
+				AP4_TfhdAtom* tfhd = AP4_DYNAMIC_CAST(AP4_TfhdAtom, traf->GetChild(AP4_ATOM_TYPE_TFHD));
+				if (tfhd == NULL) {
+					delete file;
+					input->Release();
+					output->Release();
+					return;
+				}
+				track_id = tfhd->GetTrackId();
+				traf_count++;
+			} while (traf);
+
+			// check if this fragment has more than one traf
+			if (traf_count > 1) {
+				track_id = 0;
+			}
+
+			// open a new file for this fragment if this moof is a segment start
+			if (Options.track_id_count == 0 || track_id == Options.track_ids[0]) {
+				if (output) {
+					output->Release();
+					output = NULL;
+				}
+
+				output = new AP4_MemoryByteStream();
+			}
+		}
+
+		// write the atom
+		if (output && atom->GetType() != AP4_ATOM_TYPE_MFRA && TrackIdMatches(track_id)) {
+			atom->Write(*output);
+		}
+		delete atom;
+	}
+	
+	*fragment = block_Realloc(*fragment, 0, output->GetDataSize());
+    if (*fragment)
+        memcpy((*fragment)->p_buffer, output->GetData(), output->GetDataSize());
+
+	delete file;
+	if (input) input->Release();
+	if (output) output->Release();
+}
