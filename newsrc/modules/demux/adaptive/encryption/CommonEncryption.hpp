@@ -26,7 +26,6 @@
 namespace adaptive
 {
     class SharedResources;
-    struct block_t;
 
     namespace encryption
     {
@@ -48,6 +47,7 @@ namespace adaptive
 
         class CommonEncryptionSession
         {
+            struct block_t;
             public:
                 CommonEncryptionSession();
                 ~CommonEncryptionSession();
