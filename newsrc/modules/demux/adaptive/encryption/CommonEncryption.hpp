@@ -23,6 +23,8 @@
 #include <vector>
 #include <string>
 
+struct vlc_frame_t;
+
 namespace adaptive
 {
     class SharedResources;
