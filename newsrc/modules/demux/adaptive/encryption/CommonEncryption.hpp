@@ -23,7 +23,7 @@
 #include <vector>
 #include <string>
 
-struct block_t;
+typedef struct vlc_frame_t block_t;
 
 namespace adaptive
 {
