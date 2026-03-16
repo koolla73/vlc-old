@@ -1,7 +1,7 @@
 #include "Ap4Decrypt.hpp"
 #include "Ap4.h"
 
-#include <vlc_block.h>
+//#include <vlc_block.h>
 
 
 static constexpr const unsigned int AP4_SPLIT_MAX_TRACK_IDS = 32;
