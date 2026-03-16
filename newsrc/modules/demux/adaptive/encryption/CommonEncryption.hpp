@@ -23,6 +23,8 @@
 #include <vector>
 #include <string>
 
+struct block_t;
+
 namespace adaptive
 {
     class SharedResources;
@@ -47,7 +49,6 @@ namespace adaptive
 
         class CommonEncryptionSession
         {
-            struct block_t;
             public:
                 CommonEncryptionSession();
                 ~CommonEncryptionSession();
