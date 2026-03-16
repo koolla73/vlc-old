@@ -4,8 +4,7 @@
 #include <cstdint>
 #include <cstdlib>
 
-//typedef struct vlc_frame_t block_t;
-#include <vlc_block.h>
+typedef struct vlc_frame_t block_t;
 
 class AP4_Decrypt {
 public:
