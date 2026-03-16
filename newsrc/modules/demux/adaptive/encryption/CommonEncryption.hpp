@@ -26,7 +26,7 @@
 namespace adaptive
 {
     class SharedResources;
-    class block_t;
+    struct block_t;
 
     namespace encryption
     {
