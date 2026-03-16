@@ -164,7 +164,7 @@ void BaseRepresentation::pruneByPlaybackTime(vlc_tick_t time)
         pruneBySegmentNumber(num);
 }
 
-void BaseRepresentation::saveInitData(block_t** newInitData)
+void BaseRepresentation::saveInitData(uint8_t** newInitData, const size_t newInitDataSize)
 {
     if (initData)
     {
@@ -172,9 +172,9 @@ void BaseRepresentation::saveInitData(block_t** newInitData)
         initData = nullptr;
         initDataSize = 0;
     }
-    initData = (uint8_t*)malloc((*newInitData)->i_buffer);
-    memcpy(initData, (*newInitData)->p_buffer, (*newInitData)->i_buffer);
-    initDataSize = (*newInitData)->i_buffer;
+    initData = (uint8_t*)malloc(newInitDataSize);
+    memcpy(initData, *newInitData, newInitDataSize);
+    initDataSize = newInitDataSize;
 }
 
 void BaseRepresentation::prependInitData(block_t** segment) const
