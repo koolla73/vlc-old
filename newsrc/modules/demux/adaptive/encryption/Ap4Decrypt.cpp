@@ -23,8 +23,9 @@ static bool TrackIdMatches(unsigned int track_id)
 	return false;
 }
 
-void AP4_Decrypt::decrypt(block_t** fragment, const char* keyId, const char* key) {
-	
+void AP4_Decrypt::decrypt(void** fragment, const char* keyId, const char* key) {
+
+    block_t** segment = reinterpret_cast<block_t**>(fragment);
 	if (strlen(keyId) != 32 || strlen(key) != 32) {
 		return;
 	}
@@ -37,7 +38,7 @@ void AP4_Decrypt::decrypt(block_t** fragment, const char* keyId, const char* key
 	AP4_ProtectionKeyMap keyMap;
 	keyMap.SetKeyForKid(keyID, decryptionKey, 16);
 
-	AP4_MemoryByteStream* inputBuffer = new AP4_MemoryByteStream((*fragment)->p_buffer, (*fragment)->i_buffer);
+	AP4_MemoryByteStream* inputBuffer = new AP4_MemoryByteStream((*segment)->p_buffer, (*segment)->i_buffer);
 	AP4_MemoryByteStream* decryptedOutputBuffer = new AP4_MemoryByteStream();
 	AP4_CencDecryptingProcessor* processor = new AP4_CencDecryptingProcessor(&keyMap);
 
@@ -51,21 +52,24 @@ void AP4_Decrypt::decrypt(block_t** fragment, const char* keyId, const char* key
 		return;
 	}
 
-    *fragment = block_Realloc(*fragment, 0, decryptedOutputBuffer->GetDataSize());
-    if (*fragment)
-        memcpy((*fragment)->p_buffer, decryptedOutputBuffer->GetData(), decryptedOutputBuffer->GetDataSize());
+    *segment = block_Realloc(*segment, 0, decryptedOutputBuffer->GetDataSize());
+    if (*segment != NULL)
+    {
+        memcpy((*segment)->p_buffer, decryptedOutputBuffer->GetData(), decryptedOutputBuffer->GetDataSize());
+    }
 
 	decryptedOutputBuffer->Release();
 }
 
-void AP4_Decrypt::split(block_t** fragment, uint8_t** initData, size_t& initSize) {
+void AP4_Decrypt::split(void** fragment, uint8_t** initData, size_t& initSize) {
 
+    block_t** segment = reinterpret_cast<block_t**>(fragment);
 	AP4_Result result;
 	Options.pattern_params = "IN";
 	Options.start_number = 1;
 	Options.track_id_count = 0;
 
-	AP4_MemoryByteStream* input = new AP4_MemoryByteStream((*fragment)->p_buffer, (*fragment)->i_buffer);
+	AP4_MemoryByteStream* input = new AP4_MemoryByteStream((*segment)->p_buffer, (*segment)->i_buffer);
 	AP4_File* file = new AP4_File(*input, true);
 	AP4_Movie* movie = file->GetMovie();
 	if (movie == NULL) {
@@ -149,23 +153,26 @@ void AP4_Decrypt::split(block_t** fragment, uint8_t** initData, size_t& initSize
 		delete atom;
 	}
 	
-	*fragment = block_Realloc(*fragment, 0, output->GetDataSize());
-    if (*fragment)
-        memcpy((*fragment)->p_buffer, output->GetData(), output->GetDataSize());
+	*segment = block_Realloc(*segment, 0, output->GetDataSize());
+    if (*segment != NULL)
+    {
+        memcpy((*segment)->p_buffer, output->GetData(), output->GetDataSize());
+    }
 
 	delete file;
 	if (input) input->Release();
 	if (output) output->Release();
 }
 
-void AP4_Decrypt::split(block_t** fragment) {
+void AP4_Decrypt::split(void** fragment) {
 
+    block_t** segment = reinterpret_cast<block_t**>(fragment);
 	AP4_Result result;
 	Options.pattern_params = "IN";
 	Options.start_number = 1;
 	Options.track_id_count = 0;
 
-	AP4_MemoryByteStream* input = new AP4_MemoryByteStream((*fragment)->p_buffer, (*fragment)->i_buffer);
+	AP4_MemoryByteStream* input = new AP4_MemoryByteStream((*segment)->p_buffer, (*segment)->i_buffer);
 	AP4_File* file = new AP4_File(*input, true);
 	AP4_Movie* movie = file->GetMovie();
 	if (movie == NULL) {
@@ -245,9 +252,11 @@ void AP4_Decrypt::split(block_t** fragment) {
 		delete atom;
 	}
 	
-	*fragment = block_Realloc(*fragment, 0, output->GetDataSize());
-    if (*fragment)
-        memcpy((*fragment)->p_buffer, output->GetData(), output->GetDataSize());
+	*segment = block_Realloc(*segment, 0, output->GetDataSize());
+    if (*segment != NULL)
+    {
+        memcpy((*segment)->p_buffer, output->GetData(), output->GetDataSize());
+    }
 
 	delete file;
 	if (input) input->Release();
