@@ -295,7 +295,7 @@ void CommonEncryptionSession::split(block_t** fragment, uint8_t** initData, size
 		}
 
 		// write the atom
-		if (output && atom->GetType() != AP4_ATOM_TYPE_MFRA && TrackIdMatches(track_id)) {
+		if (output && atom->GetType() != AP4_ATOM_TYPE_MFRA) {
 			atom->Write(*output);
 		}
 		delete atom;
@@ -394,7 +394,7 @@ void CommonEncryptionSession::split(block_t** fragment)
 		}
 
 		// write the atom
-		if (output && atom->GetType() != AP4_ATOM_TYPE_MFRA && TrackIdMatches(track_id)) {
+		if (output && atom->GetType() != AP4_ATOM_TYPE_MFRA) {
 			atom->Write(*output);
 		}
 		delete atom;
