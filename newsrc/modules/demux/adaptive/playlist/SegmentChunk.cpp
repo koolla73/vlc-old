@@ -86,11 +86,11 @@ void SegmentChunk::onDownload(block_t **pp_block)
                 rep->prependInitData(pp_block);
                 const std::string kid = encryptionSession->getKeyId();
                 const std::string key = encryptionSession->getKey();
-                AP4_Decrypt::decrypt(pp_block, kid.c_str(), key.c_str());
+                AP4_Decrypt::decrypt(reinterpret_cast<void**>(pp_block), kid.c_str(), key.c_str());
 
                 uint8_t* newInitData = nullptr;
                 size_t newInitSize = 0;
-                AP4_Decrypt::split(pp_block, &newInitData, newInitSize);
+                AP4_Decrypt::split(reinterpret_cast<void**>(pp_block), &newInitData, newInitSize);
                 
                 rep->saveInitData(&newInitData, newInitSize);
                 free(newInitData);
