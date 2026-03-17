@@ -20,6 +20,7 @@
 #ifndef COMMONENCRYPTION_H
 #define COMMONENCRYPTION_H
 
+#include <cstdint>
 #include <vector>
 #include <string>
 
