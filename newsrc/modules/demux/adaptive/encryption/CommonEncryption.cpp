@@ -215,7 +215,7 @@ void CommonEncryptionSession::decrypt(block_t** fragment)
 void CommonEncryptionSession::split(block_t** fragment, uint8_t** initData, size_t& initSize)
 {
     AP4_Result result;
-    unsigned int track_ids[AP4_SPLIT_MAX_TRACK_IDS];
+    unsigned int track_ids[CommonEncryptionSession::AP4_SPLIT_MAX_TRACK_IDS];
 
 	AP4_MemoryByteStream* input = new AP4_MemoryByteStream((*fragment)->p_buffer, (*fragment)->i_buffer);
 	AP4_File* file = new AP4_File(*input, true);
@@ -318,7 +318,7 @@ void CommonEncryptionSession::split(block_t** fragment, uint8_t** initData, size
 void CommonEncryptionSession::split(block_t** fragment)
 {
     AP4_Result result;
-	unsigned int track_ids[AP4_SPLIT_MAX_TRACK_IDS];
+	unsigned int track_ids[CommonEncryptionSession::AP4_SPLIT_MAX_TRACK_IDS];
 
 	AP4_MemoryByteStream* input = new AP4_MemoryByteStream((*fragment)->p_buffer, (*fragment)->i_buffer);
 	AP4_File* file = new AP4_File(*input, true);
