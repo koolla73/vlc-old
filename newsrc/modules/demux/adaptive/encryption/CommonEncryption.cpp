@@ -28,6 +28,7 @@
 #include "../SharedResources.hpp"
 
 #include <vlc_common.h>
+#include <vlc_block.h>
 #include <vlc_strings.h>
 
 #ifdef HAVE_GCRYPT
