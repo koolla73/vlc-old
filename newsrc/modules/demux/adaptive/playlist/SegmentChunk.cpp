@@ -50,12 +50,16 @@ SegmentChunk::~SegmentChunk()
 
 bool SegmentChunk::decrypt(block_t **pp_block)
 {
+    block_t *p_block = *pp_block;
+    
     if(encryptionSession)
     {
         bool b_last = !hasMoreData();
-        encryptionSession->decrypt(pp_block, b_last);
-        if(b_last)
+        p_block->i_buffer = encryptionSession->decrypt(p_block->p_buffer,
+                                                       p_block->i_buffer, b_last);
+        if(b_last) {
             encryptionSession->close();
+        }
     }
 
     return true;
