@@ -83,11 +83,7 @@ void SegmentChunk::onDownload(block_t **pp_block)
             rep->prependInitData(pp_block);
             encryptionSession->decrypt(pp_block);
             
-            if ( rep->hasSavedInitData )
-            {
-                encryptionSession->split(pp_block);
-            }
-            else
+            if ( !rep->hasSavedInitData )
             {
                 uint8_t* newInitData = nullptr;
                 size_t newInitSize = 0;
@@ -95,6 +91,7 @@ void SegmentChunk::onDownload(block_t **pp_block)
                 rep->saveInitData(&newInitData, newInitSize);
                 free(newInitData);
                 rep->hasSavedInitData = true;
+                rep->prependInitData(pp_block);
             }
 
             return;
