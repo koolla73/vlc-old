@@ -66,6 +66,7 @@ namespace adaptive
                 std::vector<unsigned char> key;
                 CommonEncryption encryption;
                 void *ctx;
+                static constexpr const unsigned int AP4_SPLIT_MAX_TRACK_IDS = 32;
         };
     }
 }
