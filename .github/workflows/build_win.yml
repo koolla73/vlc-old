@@ -12,7 +12,7 @@ jobs:
   Build:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - uses: yesolutions/mirror-action@662fce0eced8996f64d7fa264d76cddd84827f33
@@ -78,7 +78,7 @@ jobs:
     needs: Build
     runs-on: windows-2022
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Download LibVLC
         uses: actions/download-artifact@v5

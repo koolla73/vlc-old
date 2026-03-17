@@ -20,8 +20,11 @@
 #ifndef COMMONENCRYPTION_H
 #define COMMONENCRYPTION_H
 
+#include <cstdint>
 #include <vector>
 #include <string>
+
+typedef struct vlc_frame_t block_t;
 
 namespace adaptive
 {
@@ -37,7 +40,7 @@ namespace adaptive
                 enum class Method
                 {
                     None,
-                    AES_128,
+                    AES_128_CBC,
                     AES_128_CTR,
                     AES_Sample,
                 } method;
@@ -54,11 +57,16 @@ namespace adaptive
                 bool start(SharedResources *, const CommonEncryption &);
                 void close();
                 size_t decrypt(void *, size_t, bool);
+                void decrypt(block_t** fragment);
+                void split(block_t** fragment, uint8_t** initData, size_t& initSize);
+                void split(block_t** fragment);
+                CommonEncryption::Method getEncryptionMethod() const { return encryption.method; }
 
             private:
                 std::vector<unsigned char> key;
                 CommonEncryption encryption;
                 void *ctx;
+                static constexpr const unsigned int AP4_SPLIT_MAX_TRACK_IDS = 32;
         };
     }
 }
