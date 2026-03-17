@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <cstdlib>
 
-typedef struct vlc_frame_t block_t;
+//typedef struct vlc_frame_t block_t;
 
 class AP4_Decrypt {
 public:
@@ -15,9 +15,9 @@ public:
 	AP4_Decrypt(AP4_Decrypt&& other) = delete;
 	AP4_Decrypt& operator=(AP4_Decrypt&& other) = delete;
 
-	static void decrypt(block_t** fragment, const char* keyId, const char* key);
-	static void split(block_t** fragment, uint8_t** initData, size_t& initSize);
-	static void split(block_t** fragment);
+	static void decrypt(void** fragment, const char* keyId, const char* key);
+	static void split(void** fragment, uint8_t** initData, size_t& initSize);
+	static void split(void** fragment);
 
 private:
 	void* operator new(size_t);
