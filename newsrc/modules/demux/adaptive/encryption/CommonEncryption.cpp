@@ -169,9 +169,9 @@ void CommonEncryptionSession::decrypt(block_t** segment, bool last)
     {
         const std::string kid(encryption.iv.begin(), encryption.iv.end());
         const std::string keyString(key.begin(), key.end());
-        AP4_Decrypt::decrypt(segment, kid.c_str(), keyString.c_str());
+        AP4_Decrypt::decrypt(reinterpret_cast<void**>(segment), kid.c_str(), keyString.c_str());
         
-        AP4_Decrypt::split(segment);
+        AP4_Decrypt::split(reinterpret_cast<void**>(segment));
     }
     else if(encryption.method != CommonEncryption::Method::None)
     {
