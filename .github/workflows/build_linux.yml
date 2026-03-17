@@ -22,7 +22,7 @@ jobs:
           GIT_PASSWORD: ${{ secrets.GITLAB_PASSWORD }}
             
       - name: Download LibVLC source code
-        run: git clone --revision f575a4d79e86948e2024151f83fbbf82e6c165a2 --depth 1 -b master https://github.com/videolan/vlc
+        run: git clone --revision f575a4d79e86948e2024151f83fbbf82e6c165a2 --depth 1 https://github.com/videolan/vlc
 
       - name: Download and add Bento4 source code
         run: |
