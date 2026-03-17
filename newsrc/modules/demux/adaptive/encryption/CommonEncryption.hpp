@@ -57,8 +57,8 @@ namespace adaptive
                 void close();
                 size_t decrypt(void *, size_t, bool);
                 void decrypt(block_t** fragment);
-                static void split(block_t** fragment, uint8_t** initData, size_t& initSize);
-                static void split(block_t** fragment);
+                void split(block_t** fragment, uint8_t** initData, size_t& initSize);
+                void split(block_t** fragment);
                 CommonEncryption::Method getEncryptionMethod() const { return encryption.method; }
 
             private:
