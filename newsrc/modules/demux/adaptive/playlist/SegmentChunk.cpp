@@ -72,6 +72,7 @@ void SegmentChunk::onDownload(block_t **pp_block)
         if ( rep )
         {
             rep->saveInitData(reinterpret_cast<uint8_t**>(&(*pp_block)->p_buffer), (*pp_block)->i_buffer);
+            block_Release(*pp_block);
         }
 
         return;
