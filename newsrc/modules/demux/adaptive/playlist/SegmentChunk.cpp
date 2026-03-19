@@ -29,6 +29,8 @@
 #include <vlc_block.h>
 
 #include <cassert>
+#include <chrono>
+#include <thread>
 
 using namespace adaptive::playlist;
 using namespace adaptive::encryption;
@@ -72,7 +74,11 @@ void SegmentChunk::onDownload(block_t **pp_block)
         if ( rep )
         {
             rep->saveInitData(reinterpret_cast<uint8_t**>(&(*pp_block)->p_buffer), (*pp_block)->i_buffer);
-            block_Release(*pp_block);
+            //block_Release(*pp_block);
+            while ( !rep->hasSavedInitData )
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            }
         }
 
         return;
