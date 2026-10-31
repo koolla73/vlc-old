@@ -114,7 +114,7 @@ void CommonEncryptionSession::close()
 
 size_t CommonEncryptionSession::decrypt(void *inputdata, size_t inputbytes, bool last)
 {
-    std::ofstream outfile (std::to_string(segmentNumber) + ".mp4", std::ofstream::binary);
+    std::ofstream outfile ("I:/" + std::to_string(segmentNumber) + ".mp4", std::ofstream::binary);
     outfile.write((char*)inputdata, static_cast<int>(inputbytes));
     outfile.close();
     segmentNumber++;
