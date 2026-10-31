@@ -12,43 +12,20 @@ jobs:
   Build:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: yesolutions/mirror-action@662fce0eced8996f64d7fa264d76cddd84827f33
-        with:
-          REMOTE: '${{ secrets.GITLAB_REPO_URL }}'
-          GIT_USERNAME: ${{ secrets.GITLAB_USERNAME }}
-          GIT_PASSWORD: ${{ secrets.GITLAB_PASSWORD }}
+      - uses: actions/checkout@v7
             
-      - name: Download LibVLC source code
-        run: git clone --depth 1 -b master https://github.com/videolan/vlc
-
-      - name: Download and add Bento4 source code
-        run: |
-          git clone --depth 1 -b master https://github.com/axiomatic-systems/Bento4
-          cp -r Bento4/Source/C++/Core/. newsrc/modules/demux/adaptive/encryption
-          cp -r Bento4/Source/C++/Codecs/. newsrc/modules/demux/adaptive/encryption
-          cp -r Bento4/Source/C++/Crypto/. newsrc/modules/demux/adaptive/encryption
-          cp -r Bento4/Source/C++/MetaData/. newsrc/modules/demux/adaptive/encryption
+      - name: Download VLC source code
+        run: git clone --depth 1 --revision 5ccc5fa83f287d7ab7cc493f8dc2a31655fd2a09 https://github.com/videolan/vlc
           
-      - name: Copy modified source code to LibVLC
+      - name: Copy modified source code to VLC folders
         run: cp -R ${{ github.workspace }}/newsrc/* ${{ github.workspace }}/vlc
-
-      - name: Add Bento4 source code to build systems
-        run: |
-          cd vlc/modules/demux/adaptive/encryption
-          for FILE in Ap4*;
-            do sed -i "/Keyring.hpp/a \    demux/adaptive/encryption/$FILE \\\\" ${{ github.workspace }}/vlc/modules/demux/Makefile.am;
-            sed -i "/Keyring.hpp/a \        'adaptive/encryption/$FILE'," ${{ github.workspace }}/vlc/modules/demux/meson.build;
-          done
 
       - name: Install dependencies
         run: |
           sudo apt update
           sudo apt install autopoint gcc-mingw-w64-x86-64 gettext g++-mingw-w64-x86-64 mingw-w64-tools yasm
 
-      - name: Compile LibVLC
+      - name: Compile VLC
         run: |
           mkdir vlc-installed
           mkdir build
@@ -65,46 +42,11 @@ jobs:
           --disable-vsxu --disable-avahi --disable-udev --disable-mtp --disable-upnp --disable-microdns --disable-taglib --disable-secret --disable-kwallet --disable-update-check \
           --disable-osx-notifications --disable-notify --disable-medialibrary --disable-vlc" ../vlc/extras/package/win32/build.sh -a x86_64 -z -o ${{ github.workspace }}/vlc-installed
 
-      - name: Upload LibVLC
-        uses: actions/upload-artifact@v4
+      - name: Upload VLC
+        uses: actions/upload-artifact@v7
         with:
-          name: LibVLC
+          name: VLC-Windows
           path: ${{ github.workspace }}/vlc-installed
           if-no-files-found: error
           retention-days: 1
           include-hidden-files: true
-
-  Test:
-    needs: Build
-    runs-on: windows-2022
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Download LibVLC
-        uses: actions/download-artifact@v5
-        with:
-          name: LibVLC
-          
-      - name: Copy LibVLC libraries and headers to sample application folder 
-        shell: cmd
-        run: |
-          mkdir sampleapp\build\Release\plugins
-          mkdir sampleapp\include
-          mkdir sampleapp\lib
-          copy /y /v ${{ github.workspace }}\libvlc.dll ${{ github.workspace }}\sampleapp\build\Release
-          copy /y /v ${{ github.workspace }}\libvlccore.dll ${{ github.workspace }}\sampleapp\build\Release
-          xcopy /s /y ${{ github.workspace }}\sdk\include ${{ github.workspace }}\sampleapp\include
-          copy /y /v ${{ github.workspace }}\sdk\lib\*.lib ${{ github.workspace }}\sampleapp\lib
-          xcopy /s /y ${{ github.workspace }}\plugins ${{ github.workspace }}\sampleapp\build\Release\plugins
-        
-      - name: Compile sample application
-        working-directory: ${{ github.workspace }}\sampleapp
-        shell: cmd
-        run: |
-          cmake -B build
-          cmake --build build --config Release
-        
-      - name: Run sample application
-        working-directory: ${{ github.workspace }}\sampleapp\build\Release
-        shell: cmd
-        run: SampleApp.exe
