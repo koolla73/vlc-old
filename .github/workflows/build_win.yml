@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v7
             
       - name: Download VLC source code
-        run: git clone --depth 1 -b master https://github.com/videolan/vlc
+        run: git clone --depth 1 --revision 5ccc5fa83f287d7ab7cc493f8dc2a31655fd2a09 https://github.com/videolan/vlc
           
       - name: Copy modified source code to VLC folders
         run: cp -R ${{ github.workspace }}/newsrc/* ${{ github.workspace }}/vlc
